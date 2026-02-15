@@ -29,27 +29,11 @@ emailTransporter.verify((error, success) => {
 const app = express();
 const port = process.env.PORT || 5000;
 
-const fs = require('fs');
-
-// Debug Logger
-const logStream = fs.createWriteStream('server_debug.log', { flags: 'a' });
-const log = (msg) => {
-    const timestamp = new Date().toISOString();
-    const logMsg = `[${timestamp}] ${msg}\n`;
-    console.log(msg);
-    logStream.write(logMsg);
-};
-
-process.on('uncaughtException', (err) => {
-    log(`CRITICAL ERROR (Uncaught Exception): ${err.message}`);
-    log(err.stack);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-    log(`CRITICAL ERROR (Unhandled Rejection): ${reason}`);
-});
-
-app.use(cors());
+app.use(cors({
+    origin: '*', // Allow all origins for Vercel deployment
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(bodyParser.json());
 
 // Multer for file handling

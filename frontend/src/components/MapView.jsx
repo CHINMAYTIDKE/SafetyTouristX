@@ -153,7 +153,8 @@ const MapView = ({ riskHeatmap, hotels, onBook }) => {
                 // Also try server-side AI
                 let aiRisk = null;
                 try {
-                    const aiRes = await axios.post('http://localhost:5000/api/risk/batch', {
+                    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+                    const aiRes = await axios.post(`${API_URL}/api/risk/batch`, {
                         points: sampledPath.slice(0, 50).map(p => ({ lat: p[0], lng: p[1] }))
                     });
                     aiRisk = aiRes.data.average_risk;

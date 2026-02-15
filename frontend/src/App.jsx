@@ -49,7 +49,8 @@ function App() {
 
     const fetchHotels = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/hotels/list');
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            const res = await axios.get(`${API_URL}/api/hotels/list`);
             setHotels(res.data);
         } catch (err) {
             console.error("Failed to fetch hotels");
@@ -129,7 +130,8 @@ function App() {
             console.log("Transaction confirmed:", confirmedTxn);
 
             // Step 5: Record booking on backend
-            const res = await axios.post('http://localhost:5000/api/hotels/book', {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            const res = await axios.post(`${API_URL}/api/hotels/book`, {
                 hotelId: hotel.id,
                 userAddress: userAddress,
                 price: hotel.price,
@@ -191,7 +193,8 @@ function App() {
     const handleCheckIn = async (booking) => {
         setLoadingAction(`checkin-${booking.id}`);
         try {
-            const res = await axios.post('http://localhost:5000/api/hotels/checkin', {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            const res = await axios.post(`${API_URL}/api/hotels/checkin`, {
                 bookingId: booking.id
             });
 
@@ -222,7 +225,8 @@ function App() {
 
     const fetchHeatmap = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/risk/heatmap');
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            const res = await axios.get(`${API_URL}/api/risk/heatmap`);
             setRiskHeatmap(res.data);
         } catch (err) {
             console.error("Failed to fetch heatmap");
@@ -268,7 +272,8 @@ function App() {
                 const formData = new FormData();
                 formData.append('file', tempFile);
 
-                const res = await axios.post('http://localhost:5000/api/ipfs/upload', formData, {
+                const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+                const res = await axios.post(`${API_URL}/api/ipfs/upload`, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
 

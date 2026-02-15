@@ -1,101 +1,66 @@
-project Features and Workflow Documentation
+Project Features and Workflow Documentation
 =========================================
 
-Project Name: SafeTourX
-Description: A tourist safety platform integrating AI-driven risk analysis and Algorand blockchain for secure bookings and identity verification.
+Project Name: SafeCampus.AI (formerly SafeTourX)
+Description: A Student Safety & Housing Protocol integrating AI-driven risk analysis and Algorand blockchain for verified student housing, rent gamification, and secure deposits.
 
 1. Key Features
 ----------------
-a. Safety Map & Risk Analysis
-   - Real-time Heatmap: Visualize safety scores across different city zones (e.g., Mumbai).
-   - Route Planning: Users can plan routes with safety checks. The system warns if a route passes through high-risk areas.
-   - Hotel Listings: Displays verified hotels with safety ratings and reviews.
+a. Verified Student Housing & AI Risk Scoring
+   - Listings: Verified Hostels and PGs (e.g., Stanza Living, Zolo, University Hostels).
+   - Campus Zones: AI categorizes areas into "Safe Campus Zones" (Green) vs. "High Alert Zones" (Red).
+   - Dynamic Pricing: Security deposits are adjusted based on area safety (High Risk = Higher Deposit).
 
-b. Emergency SOS System
-   - One-Click Alert: Instantly notifies emergency contacts and authorities.
-   - Email Integration: Sends an automated email with the user's exact location (Google Maps link) and details to registered contacts via Nodemailer.
-   - Blockchain Logging: Incidents are logged (simulated) to create an immutable record of the event.
+b. Rent Streak Reputation (Gamification)
+   - Tenant Score: Dynamic NFT that evolves based on "Months of Rent Paid" (on-chain).
+   - Levels:
+     1. Fresher Tenant (0-5 Months): Basic status.
+     2. Reliable Sophomore (6-12 Months): Low risk tenant.
+     3. Dean's List Tenant (12+ Months): Proven reliability.
+   - Benefit: High scores unlock **Zero Security Deposit** bookings.
 
 c. Secure Booking with Algorand
-   - Smart Escrow: Users pay for hotels using ALGO cryptocurrency.
-   - Funds Protection: Payment is held in an "Escrow Account" and not released to the hotel immediately.
-   - Check-In Release: Funds are released to the hotel only after the user physically checks in and verifies their stay (Simulated Smart Contract logic).
+   - Smart Escrow: Students pay Security Deposits/Rent using ALGO.
+   - Funds Protection: Payment is held in Escrow and only released when the student verifies move-in.
+   - Trustless History: Every rent payment builds an immutable "Tenant Resume".
 
-d. Decentralized Identity (DID) Verification
-   - Document Upload to IPFS: Users upload ID documents which are stored on IPFS via Pinata for privacy and decentralization.
-   - Biometric Simulation: Includes a mock facial scanning and liveness check workflow.
-   - Identity Minting: Creates a verifiable digital identity on the platform once documents are approved.
-
-e. Wallet Integration
-   - Pera Wallet Connect: Users connect their mobile Algorand wallet (Pera) to sign transactions securely.
+d. Campus Safety & SOS
+   - Safety Map: Real-time heatmap of crime/safety around campus.
+   - Emergency SOS: One-click alert sends location to University Security and Parents.
 
 2. Workflow Breakdown
 ----------------------
 
-STEP 1: User Onboarding
-   - User signs up/logs in.
-   - User connects their Pera Wallet to the application.
-   - User completes Identity Verification (Upload ID -> IPFS -> Face Scan -> Verified).
+STEP 1: Student Onboarding
+   - Student connects Pera Wallet.
+   - AI verifies "Student Identity" (Mocked via ID upload/Face Scan).
+   - Profile created: "Student ID: STU-XXXX", "University: Pune University".
 
-STEP 2: Planning & Booking
-   - User explores the Safety Map to find safe zones.
-   - User selects a verified hotel.
-   - User clicks "Book & Escrow".
-   - Frontend creates an Algorand Transaction.
-   - Pera Wallet prompts the user to sign the transaction on their phone.
-   - Transaction is broadcast to the Algorand Testnet.
-   - Upon confirmation, the backend records the booking as "ESCROW_LOCKED".
+STEP 2: Housing Discovery
+   - Student browses "Verified Housing" near campus.
+   - Listings show "Monthly Rent" and "Distance to Campus".
+   - AI highlights if the area is a "Safe Campus Zone".
 
-STEP 3: Travel & Safety
-   - User travels using safe routes advised by the app.
-   - In case of danger, User presses SOS -> Emails sent + Incident logged.
+STEP 3: Gamified Rent Payment
+   - Student pays rent/deposit via Pera Wallet.
+   - **Rent Streak**: Payment +1 Month to "Tenant Score".
+   - **Level Up**: After 6 payments, student becomes a "Reliable Sophomore".
+   - **Benefit**: Future security deposits are WAIVED for high-level students.
 
-STEP 4: Completion
-   - User arrives at Hotel.
-   - User initiates "Check-In" within the app.
-   - System verifies and releases the locked funds to the Hotel's wallet.
+STEP 4: Move-In & Escrow Release
+   - Student arrives at the PG/Hostel.
+   - Clicks "Pay Monthly Rent" (Simulates Check-In).
+   - Funds released to Landlord.
 
-3. Tech Stack & Build Info
+3. Tech Stack
 ---------------------------
- Frontend:
-   - Framework: React.js (Vite)
-   - Styling: Tailwind CSS
-   - Maps: Leaflet / Google Maps usage mocked in parts
-   - Animations: Framer Motion
+ Frontend: React.js (Vite), Tailwind CSS, Framer Motion, Lucide Icons
+ Backend: Node.js, Express.js
+ Blockchain: Algorand Testnet, Pera Wallet Connect, Algosdk
+ AI Engine: Python (Risk Scoring), Local Face Verification
 
- Backend:
-   - Runtime: Node.js
-   - API: Express.js
-   - Email: Nodemailer (Gmail SMTP)
-   - Storage: Multer (Memory) + IPFS (Pinata)
-
- Blockchain / Web3:
-   - Network: Algorand Testnet (via AlgoNode)
-   - SDK: algosdk (JavaScript)
-   - Wallet: Pera Connect
-   - Storage: IPFS (InterPlanetary File System)
-
-4. About Algorand Integration
+4. Why Algorand?
 ------------------------------
-This project uses the Algorand Blockchain as a trust layer for financial transactions and potential data integrity.
-
-a. Why Algorand?
-   - Speed & Cost: Transactions confirm in <4 seconds with negligible fees (<0.001 ALGO), making it ideal for micro-payments and frequent updates.
-   - Carbon Negative: Eco-friendly blockchain aligns with sustainable tourism.
-
-b. Technical Implementation details:
-   - Connection: We connect to the blockchain using `algosdk` pointing to the public `testnet-api.algonode.cloud` node.
-   - Transaction Type: We use standard Payment Transactions (`pay`).
-   - Flow:
-     1. `algodClient.getTransactionParams()` fetches current network fees/rounds.
-     2. `algosdk.makePaymentTxnWithSuggestedParamsFromObject()` builds the transaction.
-        - Sender: User's Wallet
-        - Receiver: Escrow Wallet (hardcoded application address)
-        - Note field: Contains metadata like "SafeTourX Booking: hotel_001"
-     3. `peraWallet.signTransaction()` requests user approval.
-     4. `algodClient.sendRawTransaction()` broadcasts the signed bytes.
-     5. `algodClient.waitForConfirmation()` ensures the block is finalized.
-
-c. Smart Contract Logic (Simulated):
-   - Currently, the "Escrow" is represented by a central wallet address.
-   - In a production version, this would be replaced by a TEAL Smart Contract (ASC1) that autonomously holds funds and only allows transfer to the hotel upon receiving a specific "Check-In" application call.
+   - **Micro-Transactions**: Ideal for monthly rent and small deposit adjustments.
+   - **Speed**: <4s finality ensuring students don't wait at the hostel gate.
+   - **Transparency**: Creates a public, verifiable "Tenant History" that no landlord can deny.
