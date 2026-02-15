@@ -264,7 +264,8 @@ app.post('/api/risk/batch', async (req, res) => {
     try {
         const { points } = req.body;
         // Forward to Python AI Engine
-        const response = await axios.post('http://localhost:5001/predict_batch', { points });
+        const AI_ENGINE_URL = process.env.AI_ENGINE_URL || 'http://localhost:5001';
+        const response = await axios.post(`${AI_ENGINE_URL}/predict_batch`, { points });
         res.json(response.data);
     } catch (error) {
         console.error("AI Service Error:", error.message);
@@ -284,7 +285,8 @@ app.post('/api/risk/batch', async (req, res) => {
 app.get('/api/crime/data', async (req, res) => {
     try {
         const { type } = req.query;
-        const response = await axios.get('http://localhost:5001/get_crime_data', { params: { type } });
+        const AI_ENGINE_URL = process.env.AI_ENGINE_URL || 'http://localhost:5001';
+        const response = await axios.get(`${AI_ENGINE_URL}/get_crime_data`, { params: { type } });
         res.json(response.data);
     } catch (error) {
         console.error("AI Service Error (Crime Data):", error.message);
