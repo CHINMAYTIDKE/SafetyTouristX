@@ -97,19 +97,25 @@ const BookingModal = ({ hotel, onClose, onConfirm, loading }) => {
                         </div>
                     </div>
 
-                    {/* Summary */}
-                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 mt-6">
+                    {/* Summary with AI Oracle Pricing */}
+                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 mt-6 animate-pulse">
                         <div className="flex justify-between items-center text-sm text-gray-600 mb-2">
-                            <span>Price per night</span>
-                            <span>{hotel.price} ALGO</span>
+                            <span>Base Price</span>
+                            <span>{hotel.aiDetails?.basePrice || hotel.price} ALGO</span>
                         </div>
-                        <div className="flex justify-between items-center text-sm text-gray-600 mb-2">
-                            <span>Smart Escrow Fee</span>
-                            <span className="text-green-600">0.00 ALGO (Free)</span>
-                        </div>
+                        {hotel.aiDetails && (
+                            <div className="flex justify-between items-center text-sm mb-2 font-medium">
+                                <span className={hotel.aiDetails.riskPremium > 0 ? "text-orange-600" : "text-green-600"}>
+                                    {hotel.aiDetails.riskLabel}
+                                </span>
+                                <span className={hotel.aiDetails.riskPremium > 0 ? "text-orange-600" : "text-green-600"}>
+                                    {hotel.aiDetails.riskPremium > 0 ? '+' : ''}{hotel.aiDetails.riskPremium} ALGO
+                                </span>
+                            </div>
+                        )}
                         <div className="h-px bg-gray-200 my-2"></div>
                         <div className="flex justify-between items-center font-bold text-gray-900">
-                            <span>Total to Escrow</span>
+                            <span>Total (AI Adjusted)</span>
                             <span className="text-brand-600 text-lg">{hotel.price} ALGO</span>
                         </div>
                     </div>

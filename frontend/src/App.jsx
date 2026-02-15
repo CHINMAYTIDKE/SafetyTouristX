@@ -26,6 +26,7 @@ function App() {
     const [verificationStep, setVerificationStep] = useState(0);
     const [tempFile, setTempFile] = useState(null);
     const [selectedHotel, setSelectedHotel] = useState(null);
+    const [reputation, setReputation] = useState({ level: 1, checkIns: 0 });
 
     // Load wallet address from Firebase profile
     useEffect(() => {
@@ -160,7 +161,18 @@ function App() {
                     b.id === booking.id ? { ...b, status: 'FUNDS_RELEASED' } : b
                 );
                 setBookings(updatedBookings);
-                alert(`🎉 Verification Successful!\n\nSmart Contract has released ${booking.price} ALGO to the hotel.\n\nEnjoy your safe stay!`);
+
+                // Update Reputation (AI Logic)
+                const newCheckIns = reputation.checkIns + 1;
+                const newLevel = Math.floor(newCheckIns / 5) + 1;
+                const leveledUp = newLevel > reputation.level;
+
+                setReputation({
+                    checkIns: newCheckIns,
+                    level: newLevel
+                });
+
+                alert(`🎉 Verification Successful!\n\nSmart Contract has released ${booking.price} ALGO to the hotel.\n\n${leveledUp ? `🌟 LEVEL UP! You are now a Level ${newLevel} Traveler!` : 'Reputation Score Increased!'}`);
             }
         } catch (err) {
             alert("Check-in failed");
@@ -275,7 +287,7 @@ function App() {
                     </button>
                 </nav>
                 <div className="pt-20">
-                    <Profile />
+                    <Profile reputation={reputation} />
                 </div>
             </div>
         );
@@ -470,6 +482,19 @@ function App() {
                                                 <div className="text-right">
                                                     <p className="text-slate-900 font-bold text-lg">{hotel.price} <span className="text-xs font-medium text-slate-500">ALGO</span></p>
                                                     <p className="text-xs text-slate-400">per night</p>
+                                                    {hotel.aiDetails && (
+                                                        <div className="flex flex-col items-end mt-1">
+                                                            <div className={`text-[9px] font-bold px-2 py-0.5 rounded inline-block ${hotel.aiDetails.riskPremium > 0 ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
+                                                                {hotel.aiDetails.riskLabel}
+                                                            </div>
+                                                            <div className="text-[9px] font-medium text-slate-400 mt-1 max-w-[120px] leading-tight">
+                                                                Score: <span className="text-slate-700 font-bold">{hotel.aiDetails.safetyScore}/100</span>
+                                                            </div>
+                                                            <div className="text-[8px] text-slate-300 italic mt-0.5 max-w-[120px] leading-tight text-right">
+                                                                {hotel.aiDetails.reason}
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
 

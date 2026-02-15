@@ -3,12 +3,13 @@ import { motion } from 'framer-motion';
 import { User, Mail, Phone, Globe, CreditCard, Wallet, Edit2, Save, X, Loader2, Check, Upload, Camera, ScanFace, RefreshCw, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { peraWallet } from './WalletConnect';
+import ReputationNFT from './ReputationNFT';
 import QRCode from 'qrcode';
 
 // Removed face-api.js due to browser incompatibility crashing the app
 // import * as faceapi from 'face-api.js';
 
-const Profile = () => {
+const Profile = ({ reputation }) => {
     const { currentUser, userProfile, updateUserProfile, connectWallet, uploadProfilePhoto, loading: authLoading } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -401,34 +402,34 @@ const Profile = () => {
                     </div>
                 </div>
 
-                {/* QR Display */}
-                <div className="bg-slate-900 rounded-[32px] p-8 text-center text-white relative overflow-hidden flex flex-col items-center justify-center shadow-2xl">
-                    <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
+                {/* Dynamic NFT Passport */}
+                <div className="flex flex-col gap-6">
+                    <ReputationNFT level={reputation?.level || 1} checkIns={reputation?.checkIns || 0} nextLevelAt={5} />
 
-                    <h3 className="text-sm font-black uppercase tracking-[0.2em] mb-6 relative z-10 text-white/50">SafeTourX Pass</h3>
+                    {/* Legacy QR Display - specific info */}
+                    <div className="bg-slate-900 rounded-[32px] p-6 text-center text-white relative overflow-hidden flex flex-col items-center justify-center shadow-2xl">
+                        <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
 
-                    <div className="bg-white p-4 rounded-2xl shadow-lg mb-6 relative z-10 group transition-transform hover:scale-105 duration-500 min-h-[160px] flex items-center justify-center">
-                        {verificationStep === 4 && qrCodeUrl ? (
-                            <img src={qrCodeUrl} alt="Digital ID QR" className="w-40 h-40" />
-                        ) : (
-                            <div className="w-40 h-40 flex items-center justify-center bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl">
-                                <p className="text-[10px] text-slate-400 font-bold uppercase text-center px-4">
-                                    {verificationStep === 2 ? 'Camera Active' : 'Pass Locked'}
-                                </p>
-                            </div>
-                        )}
-                    </div>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] mb-4 relative z-10 text-white/50">Identity Hash</h3>
 
-                    <div className="space-y-1 relative z-10">
-                        <p className="text-lg font-bold">{displayProfile.name}</p>
-                        <p className="text-xs text-white/40 font-mono uppercase tracking-wider">
-                            ID: {displayProfile.uid?.substring(0, 8)}
-                        </p>
-                    </div>
+                        <div className="bg-white p-3 rounded-xl shadow-lg mb-4 relative z-10 group transition-transform hover:scale-105 duration-500">
+                            {verificationStep === 4 && qrCodeUrl ? (
+                                <img src={qrCodeUrl} alt="Digital ID QR" className="w-32 h-32" />
+                            ) : (
+                                <div className="w-32 h-32 flex items-center justify-center bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl">
+                                    <p className="text-[9px] text-slate-400 font-bold uppercase text-center px-2">
+                                        {verificationStep === 2 ? 'Camera Active' : 'Scan to Verify'}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
 
-                    <div className="mt-6 flex items-center gap-2 text-[10px] text-brand-400 font-bold uppercase tracking-widest bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
-                        <div className={`w-2 h-2 rounded-full ${verificationStep === 4 ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
-                        {verificationStep === 4 ? 'Active' : 'Not Verified'}
+                        <div className="space-y-1 relative z-10">
+                            <p className="text-md font-bold">{displayProfile.name}</p>
+                            <p className="text-[10px] text-white/40 font-mono uppercase tracking-wider">
+                                {displayProfile.uid?.substring(0, 8) || 'UID: PENDING'}
+                            </p>
+                        </div>
                     </div>
                 </div>
             </motion.div>

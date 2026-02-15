@@ -308,17 +308,26 @@ app.get('/api/crime/data', async (req, res) => {
     }
 });
 
-// Hotel listings endpoint
+// Hotel listings endpoint with AI Oracle Pricing
 app.get('/api/hotels/list', (req, res) => {
-    const verifiedHotels = [
+    // Simulated AI Risk Scores (0.0 - 1.0)
+    // 0.0 = Safe, 1.0 = Dangerous
+    const riskScores = {
+        "Colaba, Mumbai": 0.2,      // Safe
+        "Nariman Point, Mumbai": 0.1, // Very Safe
+        "Parel, Mumbai": 0.5,       // Moderate
+        "Dharavi, Mumbai": 0.9      // High Risk (Simulated)
+    };
+
+    const baseHotels = [
         {
             id: "hotel_001",
             name: "Taj Mahal Palace",
             location: "Colaba, Mumbai",
             verified: true,
             rating: 4.8,
-            price: 0.1, // Testing price
-            image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1000&q=80", // Luxury Palace Hotel
+            basePrice: 0.1,
+            image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1000&q=80",
             reviews: 1247
         },
         {
@@ -327,8 +336,8 @@ app.get('/api/hotels/list', (req, res) => {
             location: "Nariman Point, Mumbai",
             verified: true,
             rating: 4.9,
-            price: 0.2, // Testing price
-            image: "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1000&q=80", // Modern Luxury Resort
+            basePrice: 0.2,
+            image: "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1000&q=80",
             reviews: 892
         },
         {
@@ -337,12 +346,48 @@ app.get('/api/hotels/list', (req, res) => {
             location: "Parel, Mumbai",
             verified: true,
             rating: 4.7,
-            price: 0.3, // Testing price
-            image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1000&q=80", // Grand Hotel Architecture
+            basePrice: 0.3,
+            image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1000&q=80",
             reviews: 654
         }
     ];
-    res.json(verifiedHotels);
+
+    // AI Oracle Logic: Calculate Dynamic Price
+    const hotelsWithAIPricing = baseHotels.map(hotel => {
+        const risk = riskScores[hotel.location] || 0.5; // Default to moderate
+        let riskPremium = 0;
+        let riskLabel = "Standard Rate";
+        let aiReason = "Moderate safety rating. Standard market rates apply.";
+        let safetyScore = Math.round((1 - risk) * 100);
+
+        if (risk < 0.3) {
+            riskPremium = -0.01;
+            riskLabel = "Safe Zone Discount";
+            aiReason = `High Safety Score (${safetyScore}/100). Low crime rate in this sector reduces insurance costs.`;
+        } else if (risk > 0.7) {
+            riskPremium = 0.05;
+            riskLabel = `High Risk Premium`;
+            aiReason = `Low Safety Score (${safetyScore}/100). Additional security protocols & insurance required for this zone.`;
+        }
+
+        // Ensure price doesn't go below reasonable limit
+        const finalPrice = Math.max(0.01, parseFloat((hotel.basePrice + riskPremium).toFixed(3)));
+
+        return {
+            ...hotel,
+            price: finalPrice, // Used by frontend for booking
+            aiDetails: {
+                basePrice: hotel.basePrice,
+                riskScore: risk,
+                safetyScore: safetyScore,
+                riskPremium: parseFloat(riskPremium.toFixed(3)),
+                riskLabel: riskLabel,
+                reason: aiReason
+            }
+        };
+    });
+
+    res.json(hotelsWithAIPricing);
 });
 
 // In-memory bookings store
