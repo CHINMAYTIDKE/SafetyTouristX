@@ -9,7 +9,7 @@ import QRCode from 'qrcode';
 // Removed face-api.js due to browser incompatibility crashing the app
 // import * as faceapi from 'face-api.js';
 
-const Profile = ({ reputation }) => {
+const Profile = ({ reputation, onLevelUp, onReset }) => {
     const { currentUser, userProfile, updateUserProfile, connectWallet, uploadProfilePhoto, loading: authLoading } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -249,7 +249,7 @@ const Profile = ({ reputation }) => {
                                 <p className="text-white/80 text-sm">{displayProfile.email}</p>
                                 <div className="flex items-center gap-2 mt-2">
                                     <span className="px-2 py-0.5 bg-white/20 rounded text-[10px] font-bold uppercase tracking-wider border border-white/20">
-                                        Tourist
+                                        Student
                                     </span>
                                     {displayProfile.walletAddress && (
                                         <span className="px-2 py-0.5 bg-green-500/20 text-green-100 rounded text-[10px] font-bold uppercase tracking-wider border border-green-400/30 flex items-center gap-1">
@@ -275,9 +275,9 @@ const Profile = ({ reputation }) => {
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <ProfileField icon={User} label="Full Name" value={isEditing ? editData.name : displayProfile.name} isEditing={isEditing} onChange={(val) => setEditData({ ...editData, name: val })} />
-                            <ProfileField icon={Phone} label="Phone" value={isEditing ? editData.phone : displayProfile.phone} isEditing={isEditing} onChange={(val) => setEditData({ ...editData, phone: val })} />
-                            <ProfileField icon={Globe} label="Nationality" value={isEditing ? editData.nationality : displayProfile.nationality} isEditing={isEditing} onChange={(val) => setEditData({ ...editData, nationality: val })} />
-                            <ProfileField icon={Mail} label="Email" value={displayProfile.email} isEditing={false} />
+                            <ProfileField icon={CreditCard} label="Student ID" value="STU-2024-8921" isEditing={false} />
+                            <ProfileField icon={Globe} label="University" value="Pune University" isEditing={false} />
+                            <ProfileField icon={Mail} label="University Email" value={displayProfile.email} isEditing={false} />
                         </div>
                     </div>
                     {isEditing && (
@@ -374,6 +374,12 @@ const Profile = ({ reputation }) => {
                                     </div>
                                     <div className="absolute top-0 left-0 w-full h-1 bg-brand-500 shadow-[0_0_15px_rgba(59,130,246,0.8)] animate-scan" />
                                 </div>
+                                <div className="w-full bg-slate-100 rounded-full h-1.5 mb-2 overflow-hidden">
+                                    <div className="bg-brand-500 h-1.5 rounded-full" style={{ width: `${(reputation.checkIns % 6) * 16.66}%` }}></div>
+                                </div>
+                                <p className="text-[10px] text-slate-400 font-medium">
+                                    {6 - (reputation.checkIns % 6)} verified rent payments to next semester level
+                                </p>
                                 <h3 className="font-bold text-brand-600">
                                     {verificationStatus === 'Analyzing' ? 'Analyzing Biometrics...' : 'Verification Complete'}
                                 </h3>
@@ -405,6 +411,36 @@ const Profile = ({ reputation }) => {
                 {/* Dynamic NFT Passport */}
                 <div className="flex flex-col gap-6">
                     <ReputationNFT level={reputation?.level || 1} checkIns={reputation?.checkIns || 0} nextLevelAt={5} />
+
+                    {/* Demo Control - ALWAYS VISIBLE FOR DEMO */}
+                    <div className="text-center animate-pulse flex flex-col items-center gap-2">
+                        <button
+                            onClick={onLevelUp}
+                            className="text-xs text-white bg-red-600 border border-red-700 rounded-full px-4 py-2 hover:bg-red-700 hover:scale-105 transition-all uppercase tracking-widest font-black shadow-lg"
+                        >
+                            ⚡ Simulate Semester Pass
+                        </button>
+
+                        {onReset && (
+                            <button
+                                onClick={onReset}
+                                className="text-[10px] text-slate-400 hover:text-red-500 underline decoration-dotted underline-offset-4 transition-colors uppercase tracking-widest font-bold"
+                            >
+                                ↺ Reset to Fresher
+                            </button>
+                        )}
+
+                        <p className="text-[9px] text-slate-400 mt-1">(Visible for Judges/Demo Only)</p>
+                    </div>
+
+                    {/* Level Up Explanation */}
+                    <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-4 rounded-2xl border border-indigo-100 text-center">
+                        <h4 className="text-xs font-black uppercase tracking-widest text-indigo-800 mb-2">Why Improve Score?</h4>
+                        <p className="text-[10px] text-indigo-600 leading-relaxed">
+                            Higher Tenant Scores unlock <span className="font-bold">Zero Security Deposit</span> listings and <span className="font-bold">Lower Rent</span> at verified PGs.
+                            Your on-chain reputation proves you are a responsible student tenant.
+                        </p>
+                    </div>
 
                     {/* Legacy QR Display - specific info */}
                     <div className="bg-slate-900 rounded-[32px] p-6 text-center text-white relative overflow-hidden flex flex-col items-center justify-center shadow-2xl">

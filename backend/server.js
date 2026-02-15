@@ -308,86 +308,87 @@ app.get('/api/crime/data', async (req, res) => {
     }
 });
 
-// Hotel listings endpoint with AI Oracle Pricing
+// Student Housing / PG listings endpoint with AI Oracle Pricing
 app.get('/api/hotels/list', (req, res) => {
-    // Simulated AI Risk Scores (0.0 - 1.0)
-    // 0.0 = Safe, 1.0 = Dangerous
+    // Simulated AI Safety Scores for Student Zones
+    // 0.0 = Safe Campus Zone, 1.0 = High Crime Area
     const riskScores = {
-        "Colaba, Mumbai": 0.2,      // Safe
-        "Nariman Point, Mumbai": 0.1, // Very Safe
-        "Parel, Mumbai": 0.5,       // Moderate
-        "Dharavi, Mumbai": 0.9      // High Risk (Simulated)
+        "University Road, Pune": 0.1,  // Very Safe
+        "Kothrud, Pune": 0.2,          // Safe Residential
+        "Viman Nagar, Pune": 0.3,      // Moderate Traffic
+        "Station Road, Pune": 0.8      // High Theft Risk
     };
 
-    const baseHotels = [
+    const baseHousing = [
         {
-            id: "hotel_001",
-            name: "Taj Mahal Palace",
-            location: "Colaba, Mumbai",
+            id: "hostel_001",
+            name: "Stanza Living - Madrid House",
+            location: "University Road, Pune",
+            type: "Premium Student Housing",
             verified: true,
             rating: 4.8,
-            basePrice: 0.1,
-            image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1000&q=80",
-            reviews: 1247
+            basePrice: 0.1, // Monthly Rent in ALGO (Simulated)
+            image: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=1000&q=80",
+            reviews: 124,
+            distance: "0.5 km from Campus"
         },
         {
-            id: "hotel_002",
-            name: "The Oberoi",
-            location: "Nariman Point, Mumbai",
+            id: "pg_002",
+            name: "Zolo Scholar's Inn",
+            location: "Kothrud, Pune",
+            type: "Co-ed PG",
             verified: true,
-            rating: 4.9,
-            basePrice: 0.2,
-            image: "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1000&q=80",
-            reviews: 892
+            rating: 4.5,
+            basePrice: 0.08,
+            image: "https://images.unsplash.com/photo-1522771753062-812033fff0bd?auto=format&fit=crop&w=1000&q=80",
+            reviews: 89,
+            distance: "2.1 km from Campus"
         },
         {
-            id: "hotel_003",
-            name: "ITC Grand Central",
-            location: "Parel, Mumbai",
+            id: "hostel_003",
+            name: "Campus Hive Hostels",
+            location: "Viman Nagar, Pune",
+            type: "Private Hostel",
             verified: true,
-            rating: 4.7,
-            basePrice: 0.3,
-            image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1000&q=80",
-            reviews: 654
+            rating: 4.2,
+            basePrice: 0.15,
+            image: "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=1000&q=80",
+            reviews: 45,
+            distance: "1.2 km from Campus"
         }
     ];
 
-    // AI Oracle Logic: Calculate Dynamic Price
-    const hotelsWithAIPricing = baseHotels.map(hotel => {
-        const risk = riskScores[hotel.location] || 0.5; // Default to moderate
-        let riskPremium = 0;
-        let riskLabel = "Standard Rate";
-        let aiReason = "Moderate safety rating. Standard market rates apply.";
-        let safetyScore = Math.round((1 - risk) * 100);
+    // AI Oracle Logic: Calculate Risk-Adjusted Rent / Security Deposit
+    const housingWithAIRisk = baseHousing.map(item => {
+        const risk = riskScores[item.location] || 0.5;
+        let riskFactor = 0;
+        let riskLabel = "Standard Safety";
 
-        if (risk < 0.3) {
-            riskPremium = -0.01;
-            riskLabel = "Safe Zone Discount";
-            aiReason = `High Safety Score (${safetyScore}/100). Low crime rate in this sector reduces insurance costs.`;
+        if (risk < 0.2) {
+            riskFactor = -0.01; // Discount for safe campus zones
+            riskLabel = "Safe Campus Zone";
         } else if (risk > 0.7) {
-            riskPremium = 0.05;
-            riskLabel = `High Risk Premium`;
-            aiReason = `Low Safety Score (${safetyScore}/100). Additional security protocols & insurance required for this zone.`;
+            riskFactor = 0.05; // Higher security deposit for risky areas
+            riskLabel = "High Alert Zone";
         }
 
         // Ensure price doesn't go below reasonable limit
-        const finalPrice = Math.max(0.01, parseFloat((hotel.basePrice + riskPremium).toFixed(3)));
+        const finalPrice = Math.max(0.01, parseFloat((item.basePrice + riskFactor).toFixed(3)));
 
         return {
-            ...hotel,
+            ...item,
             price: finalPrice, // Used by frontend for booking
             aiDetails: {
-                basePrice: hotel.basePrice,
+                basePrice: item.basePrice,
                 riskScore: risk,
-                safetyScore: safetyScore,
-                riskPremium: parseFloat(riskPremium.toFixed(3)),
+                riskPremium: parseFloat(riskFactor.toFixed(3)),
                 riskLabel: riskLabel,
-                reason: aiReason
+                reason: risk < 0.3 ? "24/7 Campus Security Patrols" : "Higher theft reports in area"
             }
         };
     });
 
-    res.json(hotelsWithAIPricing);
+    res.json(housingWithAIRisk);
 });
 
 // In-memory bookings store

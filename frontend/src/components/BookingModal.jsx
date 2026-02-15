@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Calendar, Users, User, CreditCard } from 'lucide-react';
+import { X, Calendar, Users, User, CreditCard, Loader2 } from 'lucide-react';
 
 const BookingModal = ({ hotel, onClose, onConfirm, loading }) => {
     const [formData, setFormData] = useState({
@@ -22,132 +22,121 @@ const BookingModal = ({ hotel, onClose, onConfirm, loading }) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
                 {/* Header */}
-                <div className="bg-brand-600 p-6 text-white relative">
-                    <button
-                        onClick={onClose}
-                        className="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-full transition-colors"
-                    >
-                        <X className="w-5 h-5" />
+                <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-white">
+                    <h2 className="text-xl font-bold text-slate-900">Secure Housing Deposit</h2>
+                    <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                        <X className="w-5 h-5 text-slate-500" />
                     </button>
-                    <h2 className="text-xl font-bold">Secure Booking</h2>
-                    <p className="text-brand-100 text-sm mt-1">{hotel.name}</p>
                 </div>
 
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Guest Name</label>
-                        <div className="relative">
-                            <User className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                            <input
-                                type="text"
-                                required
-                                value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
-                                placeholder="Full Name"
-                            />
+                <div className="p-6 space-y-6">
+                    {/* Property Details */}
+                    <div className="flex gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <img src={hotel.image} alt={hotel.name} className="w-20 h-20 rounded-xl object-cover" />
+                        <div>
+                            <h3 className="font-bold text-slate-900">{hotel.name}</h3>
+                            <p className="text-xs text-slate-500 mb-1">{hotel.location}</p>
+                            <div className="flex items-center gap-1">
+                                <span className="text-brand-600 font-black text-lg">{hotel.price} ALGO</span>
+                                <span className="text-xs text-slate-400">/ month</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    {/* Form */}
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">Check-in</label>
+                            <label className="block text-sm font-medium text-slate-700">Student Name</label>
                             <div className="relative">
-                                <Calendar className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                                <User className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
                                 <input
-                                    type="date"
+                                    type="text"
                                     required
-                                    min={today}
-                                    value={formData.checkIn}
-                                    onChange={(e) => setFormData({ ...formData, checkIn: e.target.value })}
-                                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-500 outline-none"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all"
+                                    placeholder="Full Name"
                                 />
                             </div>
                         </div>
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">Check-out</label>
-                            <div className="relative">
-                                <Calendar className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                                <input
-                                    type="date"
-                                    required
-                                    min={formData.checkIn || today}
-                                    value={formData.checkOut}
-                                    onChange={(e) => setFormData({ ...formData, checkOut: e.target.value })}
-                                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-500 outline-none"
-                                />
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-slate-700">Move-in Date</label>
+                                <div className="relative">
+                                    <Calendar className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                                    <input
+                                        type="date"
+                                        required
+                                        min={today}
+                                        value={formData.checkIn}
+                                        onChange={(e) => setFormData({ ...formData, checkIn: e.target.value })}
+                                        className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition-all"
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-slate-700">Duration (End)</label>
+                                <div className="relative">
+                                    <Calendar className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                                    <input
+                                        type="date"
+                                        required
+                                        min={formData.checkIn || today}
+                                        value={formData.checkOut}
+                                        onChange={(e) => setFormData({ ...formData, checkOut: e.target.value })}
+                                        className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition-all"
+                                    />
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Number of Guests</label>
-                        <div className="relative">
-                            <Users className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                            <input
-                                type="number"
-                                min="1"
-                                max="10"
-                                required
-                                value={formData.guests}
-                                onChange={(e) => setFormData({ ...formData, guests: parseInt(e.target.value) })}
-                                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-500 outline-none"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Summary with AI Oracle Pricing */}
-                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 mt-6 animate-pulse">
-                        <div className="flex justify-between items-center text-sm text-gray-600 mb-2">
-                            <span>Base Price</span>
-                            <span>{hotel.aiDetails?.basePrice || hotel.price} ALGO</span>
-                        </div>
-                        {hotel.aiDetails && (
-                            <div className="flex justify-between items-center text-sm mb-2 font-medium">
-                                <span className={hotel.aiDetails.riskPremium > 0 ? "text-orange-600" : "text-green-600"}>
-                                    {hotel.aiDetails.riskLabel}
-                                </span>
-                                <span className={hotel.aiDetails.riskPremium > 0 ? "text-orange-600" : "text-green-600"}>
-                                    {hotel.aiDetails.riskPremium > 0 ? '+' : ''}{hotel.aiDetails.riskPremium} ALGO
-                                </span>
+                        {/* Summary with AI Pricing */}
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 mt-6 animate-pulse">
+                            <div className="flex justify-between items-center text-sm text-slate-600 mb-2">
+                                <span>Monthly Rent</span>
+                                <span>{hotel.aiDetails?.basePrice || hotel.price} ALGO</span>
                             </div>
-                        )}
-                        <div className="h-px bg-gray-200 my-2"></div>
-                        <div className="flex justify-between items-center font-bold text-gray-900">
-                            <span>Total (AI Adjusted)</span>
-                            <span className="text-brand-600 text-lg">{hotel.price} ALGO</span>
+                            {hotel.aiDetails && (
+                                <div className="flex justify-between items-center text-sm mb-2 font-medium">
+                                    <span className={hotel.aiDetails.riskPremium > 0 ? "text-orange-600" : "text-green-600"}>
+                                        {hotel.aiDetails.riskLabel}
+                                    </span>
+                                    <span className={hotel.aiDetails.riskPremium > 0 ? "text-orange-600" : "text-green-600"}>
+                                        {hotel.aiDetails.riskPremium > 0 ? '+' : ''}{hotel.aiDetails.riskPremium} ALGO
+                                    </span>
+                                </div>
+                            )}
+                            <div className="h-px bg-slate-200 my-2"></div>
+                            <div className="flex justify-between items-center font-bold text-slate-900">
+                                <span>Security Deposit (1 Month)</span>
+                                <span className="text-brand-600 text-lg">{hotel.price} ALGO</span>
+                            </div>
                         </div>
-                    </div>
 
-                    <p className="text-xs text-center text-gray-500 italic">
-                        Funds will be held in Smart Contract Escrow until you confirm check-in.
-                    </p>
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-brand-600 text-white font-bold py-3 rounded-xl hover:bg-brand-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-brand-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {loading ? (
-                            <>
-                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                Processing Transaction...
-                            </>
-                        ) : (
-                            <>
-                                <CreditCard className="w-5 h-5" />
-                                Book & Pay with Pera
-                            </>
-                        )}
-                    </button>
-
-                    {loading && (
-                        <p className="text-xs text-center text-brand-600 animate-pulse mt-2">
-                            Please check your Pera Wallet to sign the transaction
+                        <p className="text-[10px] text-center text-slate-500 italic">
+                            Funds held in Smart Contract Escrow until move-in verification.
                         </p>
-                    )}
-                </form>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold shadow-lg hover:bg-brand-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+                        >
+                            {loading ? (
+                                <><Loader2 className="w-5 h-5 animate-spin" /> Processing Block...</>
+                            ) : (
+                                <>Pay Security Deposit <span className="text-white/50 text-xs font-normal">(Escrow)</span></>
+                            )}
+                        </button>
+
+                        {loading && (
+                            <p className="text-xs text-center text-brand-600 animate-pulse mt-2">
+                                Please sign transaction in Pera Wallet...
+                            </p>
+                        )}
+                    </form>
+                </div>
             </div>
         </div>
     );

@@ -26,7 +26,14 @@ function App() {
     const [verificationStep, setVerificationStep] = useState(0);
     const [tempFile, setTempFile] = useState(null);
     const [selectedHotel, setSelectedHotel] = useState(null);
-    const [reputation, setReputation] = useState({ level: 1, checkIns: 0 });
+    const [reputation, setReputation] = useState(() => {
+        const saved = localStorage.getItem('safetour_reputation');
+        return saved ? JSON.parse(saved) : { level: 1, checkIns: 0 }; // checkIns now represents "Months Rent Paid"
+    });
+
+    useEffect(() => {
+        localStorage.setItem('safetour_reputation', JSON.stringify(reputation));
+    }, [reputation]);
 
     // Load wallet address from Firebase profile
     useEffect(() => {
@@ -52,6 +59,20 @@ function App() {
     const ESCROW_ADDRESS = "U3CXLXWDCXL2CGEJVTRDOIWWLJ4IUW5OMNGEYLHHIFKLVWJWM7BWFAHN4Q";
     const algodClient = new algosdk.Algodv2('', 'https://testnet-api.algonode.cloud', 443);
 
+    // AI Reputation Logic: Calculate Discount
+    const getReputationDiscount = (level) => {
+        if (level >= 5) return 0.20; // 20% off for Level 5+
+        if (level >= 3) return 0.10; // 10% off for Level 3+
+        if (level >= 2) return 0.05; // 5% off for Level 2
+        return 0;
+    };
+
+    // Helper to get final price for a hotel
+    const getFinalPrice = (basePrice, level) => {
+        const discount = getReputationDiscount(level);
+        return Math.max(0.01, parseFloat((basePrice * (1 - discount)).toFixed(3)));
+    };
+
     const handleBookHotel = async (formData) => {
         const hotel = selectedHotel;
         setLoadingAction(`book-${hotel.id}`);
@@ -72,7 +93,7 @@ function App() {
             const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
                 sender: userAddress,
                 receiver: ESCROW_ADDRESS,
-                amount: Math.round(hotel.price * 1000000), // Convert ALGO to microAlgos
+                amount: Math.round(getFinalPrice(hotel.price, reputation.level) * 1000000), // Use discounted price
                 note: new Uint8Array(new TextEncoder().encode(`SafeTourX Booking: ${hotel.id}`)),
                 suggestedParams
             });
@@ -130,7 +151,7 @@ function App() {
             alert(
                 `✅ Payment Confirmed on Algorand TestNet!\n\n` +
                 `Transaction: ${txId}\n` +
-                `Deducted: ${hotel.price} ALGO\n` +
+                `Deducted: ${getFinalPrice(hotel.price, reputation.level)} ALGO\n` +
                 `Round: ${confirmedTxn['confirmed-round']}\n` +
                 `Status: FUNDS LOCKED IN ESCROW`
             );
@@ -149,6 +170,24 @@ function App() {
         }
     };
 
+    const handleDebugLevelUp = () => {
+        const newCheckIns = reputation.checkIns + 6; // Simulate 1 Semester (6 Months)
+        const newLevel = Math.floor(newCheckIns / 6) + 1;
+        setReputation({
+            checkIns: newCheckIns,
+            level: newLevel
+        });
+        alert(`⚡ SEMESTER PASS SIMULATED!\n\nAdded 6 Months of On-Chain Rent History.\nYou are now a Level ${newLevel} Tenant (Semester ${newLevel}).`);
+    };
+
+    const handleDebugReset = () => {
+        setReputation({
+            checkIns: 0,
+            level: 1
+        });
+        alert(`🔄 DEMO RESET: New Student Profile (Fresher).`);
+    };
+
     const handleCheckIn = async (booking) => {
         setLoadingAction(`checkin-${booking.id}`);
         try {
@@ -164,7 +203,7 @@ function App() {
 
                 // Update Reputation (AI Logic)
                 const newCheckIns = reputation.checkIns + 1;
-                const newLevel = Math.floor(newCheckIns / 5) + 1;
+                const newLevel = Math.floor(newCheckIns / 6) + 1;
                 const leveledUp = newLevel > reputation.level;
 
                 setReputation({
@@ -172,7 +211,7 @@ function App() {
                     level: newLevel
                 });
 
-                alert(`🎉 Verification Successful!\n\nSmart Contract has released ${booking.price} ALGO to the hotel.\n\n${leveledUp ? `🌟 LEVEL UP! You are now a Level ${newLevel} Traveler!` : 'Reputation Score Increased!'}`);
+                alert(`🎉 Rent Payment Verified!\n\nSmart Contract has released ${booking.price} ALGO to the property owner.\n\n${leveledUp ? `🌟 LEVEL UP! You promoted to Semester ${newLevel} Tenant!` : 'Tenant Score Increased! (+1 Month History)'}`);
             }
         } catch (err) {
             alert("Check-in failed");
@@ -280,14 +319,18 @@ function App() {
                         <div className="w-9 h-9 bg-brand-600 rounded-lg flex items-center justify-center shadow-brand-500/20 shadow-lg">
                             <ShieldCheck className="text-white w-5 h-5" />
                         </div>
-                        <h1 className="text-xl font-bold tracking-tight text-slate-900">SafeTour<span className="text-brand-600">X</span></h1>
+                        <h1 className="text-xl font-bold tracking-tight text-slate-900">SafeCampus<span className="text-brand-600">.AI</span></h1>
                     </div>
                     <button onClick={() => setActiveTab('map')} className="px-4 py-2 text-sm font-bold text-brand-600 hover:bg-brand-50 rounded-xl transition-all">
-                        Back to Dashboard
+                        Back to Map
                     </button>
                 </nav>
                 <div className="pt-20">
-                    <Profile reputation={reputation} />
+                    <Profile
+                        reputation={reputation}
+                        onLevelUp={handleDebugLevelUp}
+                        onReset={handleDebugReset}
+                    />
                 </div>
             </div>
         );
@@ -301,14 +344,14 @@ function App() {
                     <div className="w-9 h-9 bg-brand-600 rounded-lg flex items-center justify-center shadow-brand-500/20 shadow-lg">
                         <ShieldCheck className="text-white w-5 h-5" />
                     </div>
-                    <h1 className="text-xl font-bold tracking-tight text-slate-900">SafeTour<span className="text-brand-600">X</span> <span className="text-[10px] bg-slate-100 text-slate-500 uppercase tracking-widest px-2 py-0.5 rounded ml-2 font-black">Official</span></h1>
+                    <h1 className="text-xl font-bold tracking-tight text-slate-900">SafeCampus<span className="text-brand-600">.AI</span> <span className="text-[10px] bg-slate-100 text-slate-500 uppercase tracking-widest px-2 py-0.5 rounded ml-2 font-black">Official</span></h1>
                 </div>
 
                 <div className="hidden md:flex items-center gap-1 bg-slate-100/50 p-1 rounded-xl border border-slate-200">
                     {[
-                        { id: 'map', icon: MapIcon, label: 'Safety Map' },
-                        { id: 'booking', icon: Calendar, label: 'Bookings' },
-                        { id: 'profile', icon: User, label: 'Profile' }
+                        { id: 'map', icon: MapIcon, label: 'Campus Map' },
+                        { id: 'booking', icon: Calendar, label: 'Housing' },
+                        { id: 'profile', icon: User, label: 'Student ID' }
                     ].map(tab => (
                         <button
                             key={tab.id}
@@ -354,8 +397,8 @@ function App() {
                                         <Bell className="w-3 h-3 animate-pulse" />
                                         <span className="text-[10px] font-black uppercase tracking-[0.2em]">Live Intelligence Feed</span>
                                     </div>
-                                    <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">SafeTravel Intelligence</h2>
-                                    <p className="text-slate-500 text-sm max-w-2xl font-medium tracking-tight">AI-monitored safety layers powered by Algorand blockchain immutable transparency.</p>
+                                    <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Campus Intelligence</h2>
+                                    <p className="text-slate-500 text-sm max-w-2xl font-medium tracking-tight">Real-time safety zones for students, powered by Algorand blockchain.</p>
                                 </div>
                                 <div className="flex gap-3">
                                     <div className="bg-white border border-slate-200 px-5 py-3 rounded-2xl flex flex-col shadow-sm">
@@ -442,8 +485,8 @@ function App() {
                             className="space-y-8"
                         >
                             <header>
-                                <h2 className="text-3xl font-extrabold tracking-tight italic">Smart <span className="text-brand-600">Escrow</span> Management</h2>
-                                <p className="text-slate-500 text-sm mt-1 max-w-xl font-medium">Your funds are protected by the Algorand blockchain. Automated release only upon verified check-in.</p>
+                                <h2 className="text-3xl font-extrabold tracking-tight italic">Verified <span className="text-brand-600">Housing</span></h2>
+                                <p className="text-slate-500 text-sm mt-1 max-w-xl font-medium">Smart Contracts hold your security deposit until you verify the property condition.</p>
                             </header>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -463,11 +506,11 @@ function App() {
                                                 <img src={hotel.image} alt={hotel.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                                                 <div className="absolute bottom-3 left-4 text-white">
-                                                    <div className="text-[10px] font-bold uppercase tracking-widest opacity-80">Verified Stay</div>
+                                                    <div className="text-[10px] font-bold uppercase tracking-widest opacity-80">Verified Housing</div>
                                                     <div className="font-bold text-lg">{hotel.name}</div>
                                                 </div>
                                                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest text-brand-600 border border-brand-100 shadow-sm flex items-center gap-1">
-                                                    <CheckCircle2 className="w-3 h-3" /> All Verified
+                                                    <CheckCircle2 className="w-3 h-3" /> Campus Approved
                                                 </div>
                                             </div>
 
@@ -480,10 +523,31 @@ function App() {
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="text-slate-900 font-bold text-lg">{hotel.price} <span className="text-xs font-medium text-slate-500">ALGO</span></p>
-                                                    <p className="text-xs text-slate-400">per night</p>
+                                                    {reputation.level > 1 ? (
+                                                        <>
+                                                            <p className="text-xs text-slate-400 line-through font-medium">{hotel.price} ALGO</p>
+                                                            <p className="text-brand-600 font-black text-xl">{getFinalPrice(hotel.price, reputation.level)} <span className="text-xs font-medium text-slate-500">ALGO</span></p>
+                                                        </>
+                                                    ) : (
+                                                        <p className="text-slate-900 font-bold text-lg">{hotel.price} <span className="text-xs font-medium text-slate-500">ALGO</span></p>
+                                                    )}
+
+                                                    <p className="text-xs text-slate-400">per month</p>
+
+                                                    {hotel.distance && (
+                                                        <div className="mt-2 bg-blue-50 text-blue-700 text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded border border-blue-100 inline-block">
+                                                            📍 {hotel.distance}
+                                                        </div>
+                                                    )}
+
+                                                    {reputation.level > 1 && (
+                                                        <div className="mt-1 bg-brand-50 text-brand-700 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border border-brand-100 inline-block">
+                                                            Level {reputation.level} Discount: -{getReputationDiscount(reputation.level) * 100}%
+                                                        </div>
+                                                    )}
+
                                                     {hotel.aiDetails && (
-                                                        <div className="flex flex-col items-end mt-1">
+                                                        <div className="flex flex-col items-end mt-2 pt-2 border-t border-slate-50">
                                                             <div className={`text-[9px] font-bold px-2 py-0.5 rounded inline-block ${hotel.aiDetails.riskPremium > 0 ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
                                                                 {hotel.aiDetails.riskLabel}
                                                             </div>
@@ -514,8 +578,8 @@ function App() {
                                                 </div>
                                             ) : (
                                                 <div className="p-4 bg-slate-50 rounded-xl space-y-2 mb-6 text-center">
-                                                    <p className="text-[10px] text-slate-500 font-medium">🔒 Smart Contract Protection Enabled</p>
-                                                    <p className="text-[9px] text-slate-400">100% Refund guarantee if verified fake</p>
+                                                    <p className="text-[10px] text-slate-500 font-medium">🔒 Smart Deposit Protection</p>
+                                                    <p className="text-[9px] text-slate-400">Funds released only after move-in verification</p>
                                                 </div>
                                             )}
 
@@ -540,7 +604,7 @@ function App() {
                                                     {loadingAction === `checkin-${existingBooking.id}` ? (
                                                         <><Loader2 className="w-4 h-4 animate-spin" /> Verifying...</>
                                                     ) : (
-                                                        "Check-in & Release"
+                                                        "Pay Monthly Rent"
                                                     )}
                                                 </button>
                                             ) : (
