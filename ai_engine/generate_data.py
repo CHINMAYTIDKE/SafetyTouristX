@@ -4,16 +4,28 @@ import random
 import time
 
 def generate_crime_data(num_samples=50000):
-    # Mumbai Coordinates Boundaries
-    lat_min, lat_max = 18.8930, 19.2700
-    lng_min, lng_max = 72.7750, 73.0000
+    # Maharashtra Coordinates Boundaries (Approx)
+    lat_min, lat_max = 15.6000, 22.0000
+    lng_min, lng_max = 72.6000, 80.9000
 
     # Risk Hotspots (Lat, Lng, Radius, Intensity)
+    # Intensity: Probability of crime if point falls in this radius
     hotspots = [
-        (18.9220, 72.8347, 0.01, 0.9), # Gateway / Colaba (High tourist, petty theft)
-        (19.0596, 72.8295, 0.02, 0.8), # Bandra (Nightlife)
-        (19.0330, 72.8450, 0.015, 0.7), # Dadar (Crowded)
-        (18.9500, 72.8200, 0.01, 0.3), # Marine Drive (Relatively Safe)
+        # Mumbai
+        (18.9220, 72.8347, 0.05, 0.9), # South Mumbai
+        (19.0596, 72.8295, 0.05, 0.8), # Bandra
+        (19.0330, 72.8450, 0.04, 0.7), # Dadar
+        # Pune
+        (18.5204, 73.8567, 0.08, 0.75), # Pune City
+        (18.5590, 73.7868, 0.04, 0.6), # Hinjawadi
+        # Nagpur
+        (21.1458, 79.0882, 0.07, 0.7),
+        # Nashik
+        (19.9975, 73.7898, 0.06, 0.65),
+        # Aurangabad
+        (19.8762, 75.3433, 0.05, 0.65),
+        # Thane
+        (19.2183, 72.9781, 0.04, 0.7),
     ]
 
     data = []

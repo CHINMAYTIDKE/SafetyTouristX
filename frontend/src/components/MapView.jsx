@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, Circle, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, Circle, CircleMarker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import axios from 'axios';
@@ -237,15 +237,15 @@ const MapView = ({ hotels, onBook }) => {
                     const color = risk === 'High' ? '#ef4444' : risk === 'Medium' ? '#f59e0b' : '#3b82f6';
 
                     return (
-                        <Circle key={`crime-${i}`} center={[lat, lng]} radius={60}
+                        <CircleMarker key={`crime-${i}`} center={[lat, lng]} radius={4}
                             pathOptions={{
                                 color: color,
                                 fillColor: color,
-                                fillOpacity: 0.7, weight: 0
+                                fillOpacity: 0.8, weight: 0
                             }}
                         >
                             <Popup><span style={{ fontSize: 12 }}><b>{type}</b><br />Risk: {risk}</span></Popup>
-                        </Circle>
+                        </CircleMarker>
                     );
                 })}
 

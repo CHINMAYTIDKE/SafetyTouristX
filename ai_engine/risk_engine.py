@@ -139,6 +139,8 @@ def get_crime_data():
             df = df[df['crime_type'] == crime_type]
             
         # Sample for visualization (limit to 2000 to prevent browser lag)
+        # Handle NaN values which break JSON
+        df = df.where(pd.notnull(df), None)
         sample = df.sample(n=min(2000, len(df))).to_dict(orient='records')
         return jsonify(sample)
     except Exception as e:
